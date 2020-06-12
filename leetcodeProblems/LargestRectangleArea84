@@ -1,0 +1,68 @@
+class Solution {
+    public int largestRectangleArea(int[] heights) {
+        if(heights==null || heights.length==0) return 0;
+        if(heights.length==1) return heights[0];
+        return calWithStack(heights);
+    }
+    class Data{
+        public ArrayList<Integer> indices;
+        public Data(int idx){
+            indices = new ArrayList<>();
+            indices.add(idx);
+        }
+    }
+    private int calWithStack(int[] heights){
+        int len = heights.length;
+        // lr 用来存放离他最近的比它小的值的下标
+        Integer[][] lr = new Integer[len][2];
+        // 栈底为最小值
+        Stack<Data> stack = new Stack<>();
+
+        for(int i=0; i<len; i++){
+            int h = heights[i];
+            while(!stack.isEmpty() && h< heights[stack.peek().indices.get(0)]){
+                Data tmp = stack.pop();
+                for(int idx:tmp.indices){
+                    lr[idx][1] = i;
+                    if(!stack.isEmpty()){
+                        lr[idx][0] = stack.peek().indices.get(stack.peek().indices.size()-1);
+                    }
+                }
+            }
+            if(!stack.isEmpty() && h == heights[stack.peek().indices.get(0)]){
+                stack.peek().indices.add(i);
+            }else{
+                stack.push(new Data(i));
+            }
+        }
+        while(!stack.isEmpty()){
+            Data tmp = stack.pop();
+            for(int idx:tmp.indices){
+                if(!stack.isEmpty()){
+                    lr[idx][0] = stack.peek().indices.get(stack.peek().indices.size()-1);
+                }
+            }
+        }
+        // System.out.println("单调栈下标为：");
+        // for(int i=0; i<len; i++){
+        //     System.out.print(lr[i][0]+" ");
+        // }
+        // System.out.println();
+        // for(int i=0; i<len; i++){
+        //     System.out.print(lr[i][1]+" ");
+        // }
+
+        int maxSize = 0;
+        int left, right, size;
+        for(int i=0; i<len; i++){
+            int h=heights[i];
+            left = lr[i][0]==null? 0: lr[i][0]+1;
+            right = lr[i][1]==null? len-1: lr[i][1]-1;
+            size = (right-left+1)*h;
+            maxSize = Math.max(size, maxSize);
+
+        }
+        return maxSize;
+    }
+
+}
